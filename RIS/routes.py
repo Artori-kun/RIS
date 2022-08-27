@@ -11,7 +11,10 @@ import hashlib
 import csv
 from flask_mail import Message
 from datetime import date
+from werkzeug.utils import secure_filename
 
+from pyorthanc import Orthanc
+from RIS.utils import convert_dcm_jpg
 # ---------------------------- Start Util Functions ------------------------------------#
 #                   In this Section are the helper utility functions
 # --------------------------------------------------------------------------------------#
@@ -48,15 +51,53 @@ If you did not make this request then simply ignore this email and no changes wi
 '''
     mail.send(msg)
 
+def import_dcm(dcm_path):
+    orthanc = Orthanc('http://172.17.0.1:8042')
+    orthanc.setup_credentials('salim', 'salim')  # If needed
+
+    with open(dcm_path, 'rb') as file_handler:
+        orthanc.post_instances(file_handler.read())
+
+def save_profile_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    
+    # save dcm to temp
+    picture_path = os.path.join(
+        app.root_path, 'static/temps', picture_fn)
+    print(picture_path)
+    form_picture.save(picture_path)
+    
+    # convert to jpg and store at patients_scans
+    convert_dcm_jpg(picture_path)
+    os.remove(picture_path)
+    # try:
+    #     import_dcm(picture_path)
+    #     print('imported')
+    # except Exception as e:
+    #     print(e)
+    return picture_fn
 
 def save_picture(form_picture):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
+    
+    # save dcm to temp
     picture_path = os.path.join(
-        app.root_path, 'static/patients_scans', picture_fn)
+        app.root_path, 'static/temps', picture_fn)
+    print(picture_path)
     form_picture.save(picture_path)
-    return picture_fn
+    
+    # convert to jpg and store at patients_scans
+    try:
+        import_dcm(picture_path)
+        os.remove(picture_path)
+        print("imported")
+    except Exception as e:
+        print(e)
+    # return picture_fn
 
 # -------------------------- End Util Functions-----------------------------------------#
 
@@ -517,9 +558,15 @@ def add_scan_img(id):
             scan = Scan.query.filter_by(id=id).first()
             form = UploadScanForm()
             if form.validate_on_submit():
-                if form.picture.data:
-                    picture_file = save_picture(form.picture.data)
-                    scan.image_file = picture_file
+                if form.pictures.data:
+                    
+                    profile_pic = form.pictures.data[int(len(form.pictures.data) / 2)]
+                    profile_pic = save_profile_picture(profile_pic)
+                    scan.image_file = profile_pic.replace('.dcm', '.jpg')
+                    
+                    for picture in form.pictures.data:
+                        save_picture(picture)
+                        # scan.image_file = picture_file
                 db.session.commit()
                 flash(
                     f'{scan.patient.name} {scan.scan_type} Scan has been uploaded! Doctor {scan.doctor.name} notified', 'success')

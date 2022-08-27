@@ -1,11 +1,11 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, MultipleFileField
 from wtforms.fields.core import IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from RIS.models import User, Patient, Doctor, Technician, Receptionist
 from wtforms.fields.html5 import DateField, DateTimeLocalField
 from flask_wtf.file import FileField, FileAllowed
-import wtforms
+# import wtforms
 
 
 class RegistrationForm(FlaskForm):
@@ -155,5 +155,6 @@ class PatientScanForm(FlaskForm):
             raise ValidationError("The doctor does not exist")
 
 class UploadScanForm(FlaskForm):
-    picture = FileField('Update profile picture', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
+    pictures = MultipleFileField('Choose Scan to Upload', validators=[FileAllowed(['dcm'])])
+    # picture = FileField('Update profile picture', validators=[FileAllowed(['dcm'])])
     submit = SubmitField('Upload Patient Scan')
