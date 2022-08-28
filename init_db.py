@@ -1,5 +1,6 @@
 from RIS import bcrypt, db
 from RIS.models import User
+from sqlalchemy_utils import database_exists, create_database
 import os
 
 db.create_all()
