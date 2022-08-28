@@ -18,4 +18,4 @@ try:
     db.session.add(user)
     db.session.commit()
 except Exception as e:
-    print("Oh shit: " + e)
+    print("Oh shit: ")
