@@ -1,3 +1,4 @@
+from msilib.schema import Error
 from RIS import bcrypt, db
 from RIS.models import User
 from sqlalchemy_utils import database_exists, create_database
@@ -8,11 +9,14 @@ db.create_all()
 # user = User(username='admin2', email='admin2@A.com', password=hashed_password)
 
 # for docker
-hashed_password = bcrypt.generate_password_hash(os.environ.get('ADMIN_PWD')).decode('utf-8')
-user = User(username=os.environ.get('ADMIN_USERNAME'), 
-            email=os.environ.get('ADMIN_EMAIL'), 
-            password=hashed_password)
+try:
+    hashed_password = bcrypt.generate_password_hash(os.environ.get('ADMIN_PWD')).decode('utf-8')
+    user = User(username=os.environ.get('ADMIN_USERNAME'), 
+                email=os.environ.get('ADMIN_EMAIL'), 
+                password=hashed_password)
 
 
-db.session.add(user)
-db.session.commit()
+    db.session.add(user)
+    db.session.commit()
+except Error as e:
+    print("Oh shit: " + e)
