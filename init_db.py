@@ -1,4 +1,3 @@
-from msilib.schema import Error
 from RIS import bcrypt, db
 from RIS.models import User
 from sqlalchemy_utils import database_exists, create_database
@@ -18,5 +17,5 @@ try:
 
     db.session.add(user)
     db.session.commit()
-except Error as e:
+except Exception as e:
     print("Oh shit: " + e)
