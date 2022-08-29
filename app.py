@@ -3,4 +3,4 @@ import os
 
 if __name__ == '__main__':
     port = os.environ.get('PORT')
-    app.run(debug=True, port=port)
+    app.run(debug=True, port=port, host="0.0.0.0")
