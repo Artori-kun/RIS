@@ -1,0 +1,33 @@
+{% extends "superuser/layout_su.html" %}
+{% block homepage %}
+    <a class="navbar-brand mr-4" href="{{ url_for('admin') }}">Radiology</a>
+{% endblock homepage %}
+{% block content %}
+    <div class="content-section">
+
+        <div class="text-center">
+            <img style="width: 1000px; height:600px ;" src="{{ url_for('static', filename='patients_scans/'+scan.image_file) }}" class="img-responsive mx-auto d-block">
+        </div>
+        {% if scan.image_file == 'default.jpg' %}
+            <form method="POST" action="" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <fieldset class="form-group">
+                    <legend class="border-bottom mb-4">Patient Scan</legend>
+                    
+                    <div class="form-group">
+                        {{ form.pictures.label() }}
+                        {{ form.pictures(class="form-control-file") }}
+                        {% if form.pictures.errors %}
+                            {% for error in form.pictures.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                    </div>
+                    {% endif %}
+                </fieldset>
+                <div class="form-group">
+                    {{ form.submit(class="btn btn-outline-info") }}
+                </div>
+            </form>
+            {% endif %}
+    </div>
+{% endblock  %}

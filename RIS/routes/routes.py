@@ -1,6 +1,4 @@
 from __future__ import print_function
-import secrets
-import os
 from flask import render_template, url_for, flash, redirect, request, abort, json
 from RIS import app, db, bcrypt, mail
 from RIS.forms import (LoginForm, ReportForm, NewDoctor, ResetPasswordForm, NewPatient,
@@ -9,98 +7,17 @@ from RIS.models import Technician, User, Patient, Doctor, Receptionist, Scan
 from flask_login import login_user, current_user, logout_user, login_required
 import hashlib
 import csv
-from flask_mail import Message
-from datetime import date
-from werkzeug.utils import secure_filename
 
-from pyorthanc import Orthanc
-from RIS.utils import convert_dcm_jpg
+
+from RIS.utils import save_picture, save_profile_picture, calculate_age, send_reset_email, send_credentials
 # ---------------------------- Start Util Functions ------------------------------------#
 #                   In this Section are the helper utility functions
 # --------------------------------------------------------------------------------------#
 
 
-def calculate_age(born):
-    today = date.today()
-    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 
-def send_credentials(email, credentials_mail, credentials_pass, credentials_name):
-    msg = Message('SBME Login Credentials',
-                  sender='noreply@demo.com',
-                  recipients=[email])
-    msg.body = f'''Welcome {credentials_name}.
-This is RIS
-Your Account Credentials are
-Username:{credentials_mail}
-Password:{credentials_pass}
-You have to reset your password with the first login
-'''
-    mail.send(msg)
 
-
-def send_reset_email(user, email):
-    token = user.get_reset_token()
-    msg = Message('Password Reset Request',
-                  sender='noreply@demo.com',
-                  recipients=[email])
-    msg.body = f'''To reset your password, visit the following link
-{url_for('reset_token', token=token, _external=True)}
-    
-If you did not make this request then simply ignore this email and no changes will be made.
-'''
-    mail.send(msg)
-
-def import_dcm(dcm_path):
-    orthanc = Orthanc('http://localhost:8042')
-    orthanc.setup_credentials('salim', 'salim')  # If needed
-    
-    orthanc.setup_credentials(os.environ.get('ORTHANC_USERNAME'),
-                              os.environ.get('ORTHANC_PWD'))
-    
-    with open(dcm_path, 'rb') as file_handler:
-        orthanc.post_instances(file_handler.read())
-
-def save_profile_picture(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    
-    # save dcm to temp
-    picture_path = os.path.join(
-        app.root_path, 'static/temps', picture_fn)
-    print(picture_path)
-    form_picture.save(picture_path)
-    
-    # convert to jpg and store at patients_scans
-    convert_dcm_jpg(picture_path)
-    os.remove(picture_path)
-    # try:
-    #     import_dcm(picture_path)
-    #     print('imported')
-    # except Exception as e:
-    #     print(e)
-    return picture_fn
-
-def save_picture(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    
-    # save dcm to temp
-    picture_path = os.path.join(
-        app.root_path, 'static/temps', picture_fn)
-    print(picture_path)
-    form_picture.save(picture_path)
-    
-    # convert to jpg and store at patients_scans
-    try:
-        import_dcm(picture_path)
-        os.remove(picture_path)
-        print("imported")
-    except Exception as e:
-        print(e)
-    # return picture_fn
 
 # -------------------------- End Util Functions-----------------------------------------#
 
@@ -296,7 +213,7 @@ def addDoctor():
                 flash(
                     f'Doctor has been created mail={mail}, password={password}', 'success')
                 return redirect(url_for('admin'))
-            return render_template('addDoctor.html', title='Add Doctor', form=form)
+            return render_template('superuser/addDoctor_su.html', title='Add Doctor', form=form)
         else:
             abort(403)
 
@@ -328,7 +245,7 @@ def addReceptionist():
                 flash(
                     f'Receptionist has been created mail={mail}, password={password}', 'success')
                 return redirect(url_for('admin'))
-            return render_template('addReceptionist.html', title='Add Receptionist', form=form)
+            return render_template('superruser/addReceptionist_su.html', title='Add Receptionist', form=form)
         else:
             abort(403)
 
@@ -360,7 +277,7 @@ def addTechnician():
                 flash(
                     f'Technician has been created mail={mail}, password={password}', 'success')
                 return redirect(url_for('admin'))
-            return render_template('addTechnician.html', title='Add Technician', form=form)
+            return render_template('superuser/addTechnician_su.html', title='Add Technician', form=form)
         else:
             abort(403)
 

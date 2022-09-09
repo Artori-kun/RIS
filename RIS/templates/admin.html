@@ -1,10 +1,4 @@
-{% extends "layout.html" %}
-{% block navbar %}
-    <a class="nav-item nav-link" href="{{ url_for('addDoctor') }}">Add Doctor</a>
-    <a class="nav-item nav-link" href="{{ url_for('addTechnician') }}">Add Technician</a>
-    <a class="nav-item nav-link" href="{{ url_for('addReceptionist') }}">Add Receptionist</a>
-    <a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
-{% endblock navbar %}
+{% extends "superuser/layout_su.html" %}
 {% block content %}
 <div class="container">
     <div class="row">
