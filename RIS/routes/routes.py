@@ -1,6 +1,6 @@
 from __future__ import print_function
-from flask import render_template, url_for, flash, redirect, request, abort, json
-from RIS import app, db, bcrypt, mail
+from flask import render_template, url_for, flash, redirect, request, abort
+from RIS import app, db, bcrypt
 from RIS.forms import (LoginForm, ReportForm, NewDoctor, ResetPasswordForm, NewPatient,
                        PatientScanForm, UploadScanForm, NewReceptionist, NewTechnician)
 from RIS.models import Technician, User, Patient, Doctor, Receptionist, Scan
@@ -10,16 +10,6 @@ import csv
 
 
 from RIS.utils import save_picture, save_profile_picture, calculate_age, send_reset_email, send_credentials
-# ---------------------------- Start Util Functions ------------------------------------#
-#                   In this Section are the helper utility functions
-# --------------------------------------------------------------------------------------#
-
-
-
-
-
-
-# -------------------------- End Util Functions-----------------------------------------#
 
 # ---------------------------- Start Util Routes ---------------------------------------#
 #                   In this Section are the helper utility routes
@@ -45,7 +35,7 @@ def login():
             csv_reader = csv.reader(csv_file)
             for line in csv_reader:
                 if bcrypt.check_password_hash(line[0], form.password.data):
-                    user = User.query.filter_by(email=form.email.data).first()
+                    user = User.query.filter_by(email=form.email.data, active=True).first()
                     if form.email.data[-5] == 'D':
                         email = Doctor.query.filter_by(
                             id=form.password.data).first()
@@ -65,7 +55,9 @@ def login():
                         'An email has been sent with instructions to reset your password', 'info')
                     return redirect(url_for('login'))
         user = User.query.filter_by(email=form.email.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
+        if user.active is False:
+            flash('This user is disabled. Please contact administrator for details.')
+        elif user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             if current_user.email[-5] == 'A':
                 return redirect(url_for('admin'))
@@ -166,155 +158,6 @@ def doctor_history():
     return render_template('doctor_history.html', scans=scans)
 
 # ---------------------------- End Doctor Routes ----------------------------------------#
-
-
-# ---------------------------- Start Admin Routes --------------------------------------#
-#                   In this Section are routes of the admin
-# ---------------------------------------------------------------------------------------#
-
-@app.route("/admin")
-@login_required
-def admin():
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'A':
-            doctors = Doctor.query.all()
-            receptionists = Receptionist.query.all()
-            technicians = Technician.query.all()
-            return render_template('admin.html', doctors=doctors, receptionists=receptionists, technicians=technicians)
-        else:
-            abort(403)
-    return redirect(url_for('login'))
-
-
-@app.route("/admin/addDoctor", methods=['GET', 'POST'])
-@login_required
-def addDoctor():
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'A':
-            form = NewDoctor()
-            if form.validate_on_submit():
-                password = int(hashlib.sha1(
-                    form.ssn.data.encode()).hexdigest(), 16) % (10 ** 8)
-                mail = f'{password}@D.com'
-                hashed_password = bcrypt.generate_password_hash(
-                    str(password)).decode('utf-8')
-                doctor = Doctor(id=password, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
-                                dob=form.dob.data, speciality=form.speciality.data, salary=form.salary.data, gender=0)
-                user = User(id=password, username=password,
-                            email=mail, password=hashed_password)
-                db.session.add(doctor)
-                db.session.add(user)
-                db.session.commit()
-                send_credentials(form.email.data, mail,
-                                 password, form.name.data)
-                with open("passwords.csv", 'a+', encoding='utf-8', newline='') as csv_file:
-                    csv_writer = csv.writer(csv_file)
-                    csv_writer.writerow([hashed_password])
-                flash(
-                    f'Doctor has been created mail={mail}, password={password}', 'success')
-                return redirect(url_for('admin'))
-            return render_template('superuser/addDoctor_su.html', title='Add Doctor', form=form)
-        else:
-            abort(403)
-
-
-@app.route("/admin/addReceptionist", methods=['GET', 'POST'])
-@login_required
-def addReceptionist():
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'A':
-            form = NewReceptionist()
-            if form.validate_on_submit():
-                password = int(hashlib.sha1(
-                    form.ssn.data.encode()).hexdigest(), 16) % (10 ** 8)
-                mail = f'{password}@R.com'
-                hashed_password = bcrypt.generate_password_hash(
-                    str(password)).decode('utf-8')
-                receptionist = Receptionist(id=password, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
-                                            dob=form.dob.data, salary=form.salary.data, gender=form.gender.data, address=form.address.data)
-                user = User(id=password, username=password,
-                            email=mail, password=hashed_password)
-                db.session.add(receptionist)
-                db.session.add(user)
-                db.session.commit()
-                send_credentials(form.email.data, mail,
-                                 password, form.name.data)
-                with open("passwords.csv", 'a+', encoding='utf-8', newline='') as csv_file:
-                    csv_writer = csv.writer(csv_file)
-                    csv_writer.writerow([hashed_password])
-                flash(
-                    f'Receptionist has been created mail={mail}, password={password}', 'success')
-                return redirect(url_for('admin'))
-            return render_template('superruser/addReceptionist_su.html', title='Add Receptionist', form=form)
-        else:
-            abort(403)
-
-
-@app.route("/admin/addTechnician", methods=['GET', 'POST'])
-@login_required
-def addTechnician():
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'A':
-            form = NewTechnician()
-            if form.validate_on_submit():
-                password = int(hashlib.sha1(
-                    form.ssn.data.encode()).hexdigest(), 16) % (10 ** 8)
-                mail = f'{password}@T.com'
-                hashed_password = bcrypt.generate_password_hash(
-                    str(password)).decode('utf-8')
-                technician = Technician(id=password, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
-                                        dob=form.dob.data, salary=form.salary.data, gender=form.gender.data, address=form.address.data)
-                user = User(id=password, username=password,
-                            email=mail, password=hashed_password)
-                db.session.add(technician)
-                db.session.add(user)
-                db.session.commit()
-                send_credentials(form.email.data, mail,
-                                 password, form.name.data)
-                with open("passwords.csv", 'a+', encoding='utf-8', newline='') as csv_file:
-                    csv_writer = csv.writer(csv_file)
-                    csv_writer.writerow([hashed_password])
-                flash(
-                    f'Technician has been created mail={mail}, password={password}', 'success')
-                return redirect(url_for('admin'))
-            return render_template('superuser/addTechnician_su.html', title='Add Technician', form=form)
-        else:
-            abort(403)
-
-
-@app.route("/admin/recep_patients/<int:id>/")
-@login_required
-def recep_patients(id):
-    if current_user.email[-5] == 'A':
-        receptionist = Receptionist.query.filter_by(id=id).first()
-        recep_patients = Scan.query.filter_by(receptionist=receptionist)
-        return render_template("recep_patients.html", p_data=recep_patients, name=receptionist.name)
-    else:
-        abort(403)
-
-
-@app.route("/admin/tech_patients/<int:id>/")
-@login_required
-def tech_patients(id):
-    if current_user.email[-5] == 'A':
-        technician = Technician.query.filter_by(id=id).first()
-        tech_patients = Scan.query.filter_by(technician=technician)
-        return render_template("tech_patients.html", p_data=tech_patients, name=technician.name)
-    else:
-        abort(403)
-
-
-@app.route("/admin/doc_patients/<int:id>/")
-@login_required
-def doc_patients(id):
-    if current_user.email[-5] == 'A':
-        doctor = Doctor.query.filter_by(id=id).first()
-        doc_patients = Scan.query.filter_by(doctor=doctor)
-        return render_template("doc_patients.html", p_data=doc_patients, name=doctor.name)
-    else:
-        abort(403)
-
-# ---------------------------- End Admin Routes ----------------------------------------#
 
 
 # ---------------------------- Start Receptionist Routes --------------------------------#

@@ -33,4 +33,4 @@ login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 mail = Mail(app)
 
-from RIS.routes import routes, routes_su
+from RIS.routes import routes, routes_su, routes_admin

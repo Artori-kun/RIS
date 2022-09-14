@@ -1,18 +1,10 @@
-import secrets
-import os
-from flask import render_template, url_for, flash, redirect, request, abort, json
-from RIS import app, db, bcrypt, mail
-from RIS.forms import (LoginForm, ReportForm, NewDoctor, ResetPasswordForm, NewPatient,
-                       PatientScanForm, UploadScanForm, NewReceptionist, NewTechnician)
+from flask import render_template, url_for, flash, redirect, request, abort
+from RIS import app, db, bcrypt
+from RIS.forms import (ReportForm, NewPatient, PatientScanForm, UploadScanForm)
 from RIS.models import Technician, User, Patient, Doctor, Receptionist, Scan
-from flask_login import login_user, current_user, logout_user, login_required
+from flask_login import current_user, login_required
 import hashlib
 import csv
-from flask_mail import Message
-from datetime import date
-from werkzeug.utils import secure_filename
-
-from pyorthanc import Orthanc
 from RIS.utils import save_picture, save_profile_picture, calculate_age, send_reset_email, send_credentials
 
 #---------------------Doctor Routes for Super User--------------------#
@@ -201,6 +193,10 @@ def patient_scan_su(patient_id):
         if current_user.email[-5] == 'A':
             patient = Patient.query.get(patient_id)
             form = PatientScanForm()
+            
+            form.doctor_ssn.choices = [(doctor.id, doctor.name) for doctor in Doctor.query.filter_by(active=True).all()]
+            form.technician_ssn.choices = [(tech.id, tech.name) for tech in Technician.query.filter_by(active=True).all()]
+            
             if form.validate_on_submit():
                 patient = Patient.query.filter_by(ssn=form.ssn.data).first()
                 doctor = Doctor.query.filter_by(

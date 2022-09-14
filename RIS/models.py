@@ -14,6 +14,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
+    active = db.Column(db.Boolean, nullable=False, default=True)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)
@@ -35,13 +36,14 @@ class User(db.Model, UserMixin):
 class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=False, nullable=False)
-    ssn = db.Column(db.String(14), unique=True, nullable=False)
+    ssn = db.Column(db.String(14), nullable=False)
     dob = db.Column(db.DateTime, nullable=False)
     speciality = db.Column(db.String(20), nullable=False)
     salary = db.Column(db.Integer, nullable=False, default=5000)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), nullable=False)
     gender = db.Column(db.String(6), nullable=False)
     scans = db.relationship('Scan', backref='doctor', lazy=True)
+    active = db.Column(db.Boolean, nullable=False, default=True)
 
     def __repr__(self):
         return f"User('{self.name}', '{self.email}', '{self.ssn}')"
@@ -81,25 +83,27 @@ class Scan(db.Model):
 class Receptionist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=False, nullable=False)
-    ssn = db.Column(db.String(14), unique=True, nullable=False)
+    ssn = db.Column(db.String(14), nullable=False)
     dob = db.Column(db.DateTime, nullable=False)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), nullable=False)
     gender = db.Column(db.String(6), nullable=False)
     address = db.Column(db.String(200))
     salary = db.Column(db.Integer, nullable=False, default=5000)
     scans = db.relationship('Scan', backref='receptionist', lazy=True)
+    active = db.Column(db.Boolean, nullable=False, default=True)
 
 
 
 class Technician(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=False, nullable=False)
-    ssn = db.Column(db.String(14), unique=True, nullable=False)
+    ssn = db.Column(db.String(14), nullable=False)
     dob = db.Column(db.DateTime, nullable=False)
     date_created = db.Column(db.DateTime, nullable=False, default = datetime.utcnow())
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), nullable=False)
     gender = db.Column(db.String(6), nullable=False)
     address = db.Column(db.String(200))
     salary = db.Column(db.Integer, nullable=False, default=5000)
     scans = db.relationship('Scan', backref='technician', lazy=True)
+    active = db.Column(db.Boolean, nullable=False, default=True)

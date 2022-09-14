@@ -31,7 +31,18 @@
                                 <td>${{row.salary }}</td>
                                 <td>{{row.speciality}}</td>
                                 <td>{{row.email}}</td>
-                                <td><a href="{{url_for('doc_patients', id =row.id )}}"  class="btn btn-warning btn-xs">D Patients</a></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Actions
+                                        </button>
+                                        <div class="dropdown-menu">
+                                          <a class="dropdown-item" href="{{url_for('doc_patients', id =row.id )}}">Patients</a>
+                                          <a class="dropdown-item" href="{{url_for('doc_update', id = row.id)}}">Edit</a>
+                                          <a class="dropdown-item" href="{{url_for('doc_disable', id = row.id)}}">Delete</a>
+                                        </div>
+                                      </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -70,7 +81,18 @@
                                 <td>${{row.salary }}</td>
                                 <td>{{ row.email }}</td>
                                 <td>{{ row.address }}</td>
-                                <td><a href="{{url_for('tech_patients', id =row.id )}}"  class="btn btn-warning btn-xs">T Patients</a></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Actions
+                                        </button>
+                                        <div class="dropdown-menu">
+                                          <a class="dropdown-item" href="{{url_for('tech_patients', id =row.id )}}">Patients</a>
+                                          <a class="dropdown-item" href="{{url_for('tech_update', id = row.id)}}">Edit</a>
+                                          <a class="dropdown-item" href="{{url_for('tech_disable', id = row.id)}}">Delete</a>
+                                        </div>
+                                      </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -109,7 +131,18 @@
                                 <td>${{row.salary }}</td>
                                 <td>{{ row.email }}</td>
                                 <td>{{ row.address }}</td>
-                                <td><a href="{{url_for('recep_patients', id =row.id )}}"  class="btn btn-warning btn-xs">R Patients</a></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Actions
+                                        </button>
+                                        <div class="dropdown-menu">
+                                          <a class="dropdown-item" href="{{url_for('recep_patients', id =row.id )}}">Patients</a>
+                                          <a class="dropdown-item" href="{{url_for('recep_update', id = row.id)}}">Edit</a>
+                                          <a class="dropdown-item" href="{{url_for('recep_disable', id = row.id)}}">Delete</a>
+                                        </div>
+                                      </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
