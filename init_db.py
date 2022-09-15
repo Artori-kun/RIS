@@ -10,12 +10,12 @@ db.create_all()
 
 # for docker
 try:
-    hashed_password_admin = bcrypt.generate_password_hash('123456').decode('utf-8')
-    user = User(username='admin', email='admin@A.com', password=hashed_password_admin)
-    # hashed_password = bcrypt.generate_password_hash(os.environ.get('ADMIN_PWD')).decode('utf-8')
-    # user = User(username=os.environ.get('ADMIN_USERNAME'), 
-    #             email=os.environ.get('ADMIN_EMAIL'), 
-    #             password=hashed_password)
+    # hashed_password_admin = bcrypt.generate_password_hash('123456').decode('utf-8')
+    # user = User(username='admin', email='admin@A.com', password=hashed_password_admin)
+    hashed_password = bcrypt.generate_password_hash(os.environ.get('ADMIN_PWD')).decode('utf-8')
+    user = User(username=os.environ.get('ADMIN_USERNAME'), 
+                email=os.environ.get('ADMIN_EMAIL'), 
+                password=hashed_password)
 
     hashed_password_base_recep = bcrypt.generate_password_hash('123456').decode('utf-8')
     base_recep_mail = 'base_recep@R.com'

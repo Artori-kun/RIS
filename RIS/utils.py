@@ -71,8 +71,8 @@ def import_dcm(dcm_path):
     orthanc = Orthanc('http://localhost:8042')
     # orthanc.setup_credentials('salim', 'salim')  # If needed
     
-    # orthanc.setup_credentials(os.environ.get('ORTHANC_USERNAME'),
-    #                           os.environ.get('ORTHANC_PWD'))
+    orthanc.setup_credentials(os.environ.get('ORTHANC_USERNAME'),
+                              os.environ.get('ORTHANC_PWD'))
     
     with open(dcm_path, 'rb') as file_handler:
         orthanc.post_instances(file_handler.read())
