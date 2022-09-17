@@ -32,17 +32,17 @@ def addDoctor():
         if current_user.email[-5] == 'A':
             form = NewDoctor()
             if form.validate_on_submit():
-                id = int(str(uuid.uuid4().int)[:5])
+                # id = int(str(uuid.uuid4().int)[:5])
                 password = int(hashlib.sha1(
                     form.ssn.data.encode()).hexdigest(), 16) % (10 ** 8)
-                mail = f'{id}@D.com'
+                mail = f'{password}@D.com'
                 hashed_password = bcrypt.generate_password_hash(
                     str(password)).decode('utf-8')
                 
                 
-                doctor = Doctor(id=id, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
+                doctor = Doctor(id=password, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
                                 dob=form.dob.data, speciality=form.speciality.data, salary=form.salary.data, gender=0)
-                user = User(id=id, username=id,
+                user = User(id=password, username=password,
                             email=mail, password=hashed_password)
                 db.session.add(doctor)
                 db.session.add(user)
@@ -67,17 +67,17 @@ def addReceptionist():
         if current_user.email[-5] == 'A':
             form = NewReceptionist()
             if form.validate_on_submit():
-                id = int(str(uuid.uuid4().int)[:5])
+                # id = int(str(uuid.uuid4().int)[:5])
                 password = int(hashlib.sha1(
                     form.ssn.data.encode()).hexdigest(), 16) % (10 ** 8)
-                mail = f'{id}@R.com'
+                mail = f'{password}@R.com'
                 hashed_password = bcrypt.generate_password_hash(
                     str(password)).decode('utf-8')
                 
                 
-                receptionist = Receptionist(id=id, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
+                receptionist = Receptionist(id=password, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
                                             dob=form.dob.data, salary=form.salary.data, gender=form.gender.data, address=form.address.data)
-                user = User(id=id, username=id,
+                user = User(id=password, username=password,
                             email=mail, password=hashed_password)
                 db.session.add(receptionist)
                 db.session.add(user)
@@ -102,17 +102,17 @@ def addTechnician():
         if current_user.email[-5] == 'A':
             form = NewTechnician()
             if form.validate_on_submit():
-                id = int(str(uuid.uuid4().int)[:5])
+                # id = int(str(uuid.uuid4().int)[:5])
                 password = int(hashlib.sha1(
                     form.ssn.data.encode()).hexdigest(), 16) % (10 ** 8)
-                mail = f'{id}@T.com'
+                mail = f'{password}@T.com'
                 hashed_password = bcrypt.generate_password_hash(
                     str(password)).decode('utf-8')
                 
                 
-                technician = Technician(id=id, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
+                technician = Technician(id=password, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
                                         dob=form.dob.data, salary=form.salary.data, gender=form.gender.data, address=form.address.data)
-                user = User(id=id, username=id,
+                user = User(id=password, username=password,
                             email=mail, password=hashed_password)
                 db.session.add(technician)
                 db.session.add(user)

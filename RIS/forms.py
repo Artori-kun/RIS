@@ -54,14 +54,14 @@ class NewDoctor(FlaskForm):
     submit = SubmitField('Add New Doctor')
 
     def validate_ssn(self, ssn):
-        ssn = Doctor.query.filter_by(ssn=ssn.data, active=True).first()
+        ssn = Doctor.query.filter_by(ssn=ssn.data).first()
         if ssn:
-            raise ValidationError("This ssn already exists")
+            raise ValidationError("This ssn already exists.")
         
     def validate_email(self, email) :
-        email = Doctor.query.filter_by(email = email.data, active=True).first()
+        email = Doctor.query.filter_by(email = email.data).first()
         if  email :
-            raise ValidationError("This Email already exists. try a different one")
+            raise ValidationError("This Email already exists. Try a different one")
 
 class ResetPasswordForm(FlaskForm):
     password = PasswordField('New Password', validators=[DataRequired()])
@@ -82,12 +82,12 @@ class NewReceptionist(FlaskForm):
     submit = SubmitField('Add New Reciptionist')
 
     def validate_ssn(self, ssn):
-        ssn = Receptionist.query.filter_by(ssn=ssn.data, active=True).first()
+        ssn = Receptionist.query.filter_by(ssn=ssn.data).first()
         if ssn:
             raise ValidationError("This ssn already exists")
         
     def validate_email(self, email) :
-        email = Receptionist.query.filter_by(email = email.data, active=True).first()
+        email = Receptionist.query.filter_by(email = email.data).first()
         if  email :
             raise ValidationError("This Email already exists. try a different one")
 
@@ -102,12 +102,12 @@ class NewTechnician(FlaskForm):
     submit = SubmitField('Add New Technician')
 
     def validate_ssn(self, ssn):
-        ssn = Technician.query.filter_by(ssn=ssn.data, active=True).first()
+        ssn = Technician.query.filter_by(ssn=ssn.data).first()
         if ssn:
             raise ValidationError("This ssn already exists")
         
     def validate_email(self, email) :
-        email = Technician.query.filter_by(email = email.data, active=True).first()
+        email = Technician.query.filter_by(email = email.data).first()
         if  email :
             raise ValidationError("This Email already exists. try a different one")
 

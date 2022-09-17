@@ -35,8 +35,10 @@ def login():
             csv_reader = csv.reader(csv_file)
             for line in csv_reader:
                 if bcrypt.check_password_hash(line[0], form.password.data):
-                    user = User.query.filter_by(email=form.email.data, active=True).first()
-                    if form.email.data[-5] == 'D':
+                    user = User.query.filter_by(email=form.email.data).first()
+                    if user.active is False:
+                        raise('This user is disabled. Please contact administrator for details.')
+                    elif form.email.data[-5] == 'D':
                         email = Doctor.query.filter_by(
                             id=form.password.data).first()
                     elif form.email.data[-5] == 'R':
