@@ -2,7 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
-static/
+static/patients_scans/
+static/temps/*
 /RIS/__init__.py
 
 
