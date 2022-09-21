@@ -170,14 +170,20 @@ class UpdateDoctor(FlaskForm):
     salary = IntegerField('Salary', validators=[DataRequired()])
     submit = SubmitField('Update Doctor Information')
 
+    current = Doctor()
+    
+    def populate_obj(self, obj):
+        self.current = obj
+        super().populate_obj(obj)
+    
     def validate_ssn(self, ssn):
         ssn = Doctor.query.filter_by(ssn=ssn.data, active=True).first()
-        if ssn:
+        if ssn and ssn is not self.current:
             raise ValidationError("This ssn already exists")
         
     def validate_email(self, email) :
         email = Doctor.query.filter_by(email = email.data, active=True).first()
-        if  email :
+        if  email and email is not self.current:
             raise ValidationError("This Email already exists. try a different one")
         
 class UpdateReceptionist(FlaskForm):
@@ -192,14 +198,20 @@ class UpdateReceptionist(FlaskForm):
     address = StringField('Receptionist Address', validators=[DataRequired(), Length(min=3, max=100)])
     submit = SubmitField('Update Receptionist Information')
 
+    current = Receptionist()
+    
+    def populate_obj(self, obj):
+        self.current = obj
+        super().populate_obj(obj)
+    
     def validate_ssn(self, ssn):
         ssn = Receptionist.query.filter_by(ssn=ssn.data, active=True).first()
-        if ssn:
+        if ssn and ssn is not self.current:
             raise ValidationError("This ssn already exists")
         
     def validate_email(self, email) :
         email = Receptionist.query.filter_by(email = email.data, active=True).first()
-        if  email :
+        if  email and email is not self.current:
             raise ValidationError("This Email already exists. try a different one")
         
 class UpdateTechnician(FlaskForm):
@@ -212,12 +224,18 @@ class UpdateTechnician(FlaskForm):
     address = StringField('Technician Address', validators=[DataRequired(), Length(min=3, max=100)])
     submit = SubmitField('Update Technician Information')
 
+    current = Technician()
+    
+    def populate_obj(self, obj):
+        self.current = obj
+        super().populate_obj(obj)
+    
     def validate_ssn(self, ssn):
         ssn = Technician.query.filter_by(ssn=ssn.data, active=True).first()
-        if ssn:
+        if ssn and ssn is not self.current:
             raise ValidationError("This ssn already exists")
         
     def validate_email(self, email) :
         email = Technician.query.filter_by(email = email.data, active=True).first()
-        if  email :
+        if  email and email is not self.current:
             raise ValidationError("This Email already exists. try a different one")

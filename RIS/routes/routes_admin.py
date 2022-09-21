@@ -279,15 +279,16 @@ def recep_update(id):
                 abort(404)
             
             form = UpdateReceptionist(obj=recep)
+            form.populate_obj(recep)
             if form.validate_on_submit():
-                form.populate_obj(recep)
+                
                 db.session.add(recep)
                 db.session.commit()
                 
                 flash('Receptionist updated', 'success')
                 
                 return redirect(url_for('admin'))
-            return render_template("superuser/addDoctor_su.html", form=form)
+            return render_template("superuser/addReceptionist_su.html", form=form)
         else:
             abort(403)
     else:
