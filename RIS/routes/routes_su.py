@@ -195,8 +195,8 @@ def patient_scan_su(patient_id):
             patient = Patient.query.get(patient_id)
             form = PatientScanForm()
             
-            form.doctor_ssn.choices = [(doctor.id, doctor.name) for doctor in Doctor.query.filter_by(active=True).all()]
-            form.technician_ssn.choices = [(tech.id, tech.name) for tech in Technician.query.filter_by(active=True).all()]
+            form.doctor_ssn.choices = [(doctor.ssn, doctor.name) for doctor in Doctor.query.filter_by(active=True).all()]
+            form.technician_ssn.choices = [(tech.ssn, tech.name) for tech in Technician.query.filter_by(active=True).all()]
             
             if form.validate_on_submit():
                 patient = Patient.query.filter_by(ssn=form.ssn.data).first()
