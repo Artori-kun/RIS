@@ -112,7 +112,8 @@ def recep_su():
     if current_user.is_authenticated:
         if current_user.email[-5] == 'A':
             all_patients_scans = Scan.query.all()
-            return render_template("superuser/receptionist_su.html", p_data=all_patients_scans)
+            all_patients = Patient.query.all()
+            return render_template("superuser/receptionist_su.html", p_data=all_patients_scans, all_p=all_patients)
         else:
             abort(403)
 

@@ -22,28 +22,26 @@
                             <th>ID</th>
                             <th>Name</th>
                             <th>SSN</th>
-                            <th>Reservation Date</th>
-                            <th>Scan Type</th>
-                            <th>Receptionist</th>
-                            <th>Technition</th>
-                            <th>Doctor</th>
-                            <th>Scan Fees</th>
+                            <th>Email</th>
+                            <th>Gender</th>
+                            <th>Address</th>
+                            <th>Date of Birth</th>
+                            <th>Age</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row in p_data %}
+                        {% for row in all_p %}
                             {% if row.image_file == 'default.jpg' or row.report_title == None %}
                                 <tr>
                                     <td>{{row.id}}</td>
-                                    <td>{{row.patient.name}}</td>
-                                    <td>{{row.patient.ssn}}</td>
-                                    <td>{{row.scan_date.strftime('%Y-%m-%d') }}</td>
-                                    <td>{{row.scan_type}}</td>
-                                    <td>{{row.receptionist.name}}</td>
-                                    <td>{{row.technician.name}}</td>
-                                    <td>{{row.doctor.name}}</td>
-                                    <td>{{row.fees}}</td>
+                                    <td>{{row.name}}</td>
+                                    <td>{{row.ssn}}</td>
+                                    <td>{{row.email}}</td>
+                                    <td>{{row.gender}}</td>
+                                    <td>{{row.address}}</td>
+                                    <td>{{row.dob.strftime('%Y-%m-%d')}}</td>
+                                    <td>{{row.age}}</td>
                                     <td>
                                         <a href="{{url_for('visit_patient_su', id=row.patient.id)}}"  class="btn btn-success btn-xs">Patient Visits</a>
                                     </td>
