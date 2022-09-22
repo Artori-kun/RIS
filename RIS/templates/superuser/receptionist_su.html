@@ -42,7 +42,7 @@
                                 <td>{{row.dob.strftime('%Y-%m-%d')}}</td>
                                 <td>{{row.age}}</td>
                                 <td>
-                                    <a href="{{url_for('visit_patient_su', id=row.patient.id)}}"  class="btn btn-success btn-xs">Patient Visits</a>                                    </td>
+                                    <a href="{{url_for('visit_patient_su', id=row.id)}}"  class="btn btn-success btn-xs">Patient Visits</a>                                    </td>
                             </tr>
                         {% endfor %}
                     </tbody>
