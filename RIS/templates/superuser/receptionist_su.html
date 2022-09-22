@@ -32,21 +32,18 @@
                     </thead>
                     <tbody>
                         {% for row in all_p %}
-                            {% if row.image_file == 'default.jpg' or row.report_title == None %}
-                                <tr>
-                                    <td>{{row.id}}</td>
-                                    <td>{{row.name}}</td>
-                                    <td>{{row.ssn}}</td>
-                                    <td>{{row.email}}</td>
-                                    <td>{{row.gender}}</td>
-                                    <td>{{row.address}}</td>
-                                    <td>{{row.dob.strftime('%Y-%m-%d')}}</td>
-                                    <td>{{row.age}}</td>
-                                    <td>
-                                        <a href="{{url_for('visit_patient_su', id=row.patient.id)}}"  class="btn btn-success btn-xs">Patient Visits</a>
-                                    </td>
-                                </tr>
-                            {% endif %}
+                            <tr>
+                                <td>{{row.id}}</td>
+                                <td>{{row.name}}</td>
+                                <td>{{row.ssn}}</td>
+                                <td>{{row.email}}</td>
+                                <td>{{row.gender}}</td>
+                                <td>{{row.address}}</td>
+                                <td>{{row.dob.strftime('%Y-%m-%d')}}</td>
+                                <td>{{row.age}}</td>
+                                <td>
+                                    <a href="{{url_for('visit_patient_su', id=row.patient.id)}}"  class="btn btn-success btn-xs">Patient Visits</a>                                    </td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
