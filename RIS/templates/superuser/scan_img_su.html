@@ -16,7 +16,7 @@
                     
                     <div class="form-group">
                         {{ form.pictures.label() }}
-                        {{ form.pictures(class="form-control-file") }}
+                        {{ form.pictures(class="form-control-file", webkitdirectory="", mozdirectory="") }}
                         {% if form.pictures.errors %}
                             {% for error in form.pictures.errors %}
                                 <span class="text-danger">{{ error }}</span>

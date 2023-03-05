@@ -3,7 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 static/patients_scans/
-static/temps/*
 /RIS/__init__.py
 
 
@@ -114,6 +113,9 @@ ENV/
 env.bak/
 venv.bak/
 RISvenv/
+.vscode/
+migrations/
+./password.csv
 
 # Spyder project settings
 .spyderproject

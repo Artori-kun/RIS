@@ -1,15 +1,9 @@
 {% extends "layout.html" %}
-{% block homepage %}
-    <a class="navbar-brand mr-4" href="{{ url_for('recep') }}">Radiology</a>
-{% endblock homepage %}
-{% block navbar %}
-    <a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
-{% endblock navbar %}
 {% block content %}
 <!-- content is the name of the block defined in the layout.html -->
 
 <div class="content-section">
-    <form method="POST" action="">
+    <form method="POST" action="" enctype="multipart/form-data">
         {{form.hidden_tag()}}
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">
@@ -18,82 +12,193 @@
 
 
 
-            <!--ssn -->
+            <!--patient_ssn -->
             <div class="form-group">
-                {{form.ssn.label(class = "form-control-label")}}
-                {% if form.ssn.errors %}
-                {{ form.ssn(class = "form-control form-control-lg is-invalid")}}
+                {{form.patient_ssn.label(class = "form-control-label")}}
+                {% if form.patient_ssn.errors %}
+                {{ form.patient_ssn(class = "form-control form-control-lg is-invalid")}}
                 <div class="invalid-feedback">
-                    {% for error in form.ssn.errors %}
+                    {% for error in form.patient_ssn.errors %}
                     <span> {{ error }}</span>
                     {% endfor %}
                 </div>
                 {% else %}
-                {{ form.ssn(class = "form-control form-control-lg") }}
+                {{ form.patient_ssn(class = "form-control form-control-lg") }}
                 {% endif %}
-
             </div>
-            <!---scan type -->
+
+            <!---patient_name -->
             <div class="form-group">
-                {{ form.scan_type.label(class = "form-control-label") }}
-                {% if form.scan_type.errors %}
-                {{ form.scan_type(class = "form-control form-control-lg is-invalid")}}
+                {{ form.patient_name.label(class = "form-control-label") }}
+                {% if form.patient_name.errors %}
+                {{ form.patient_name(class = "form-control form-control-lg is-invalid")}}
                 <div class="invalid-feedback">
-                    {% for error in form.scan_type.errors %}
+                    {% for error in form.patient_name.errors %}
                     <span> {{ error }}</span>
                     {% endfor %}
                 </div>
-
                 {% else %}
-                {{ form.scan_type(class = "form-control form-control-lg") }}
+                {{ form.patient_name(class = "form-control form-control-lg") }}
                 {% endif %}
-
             </div>
 
-            <!-- fees -->
+            <!-- dob -->
             <div class="form-group">
-                {{ form.fees.label(class = "form-control-label") }}
-                {% if form.fees.errors %}
-                {{ form.fees(class = "form-control form-control-lg is-invalid")}}
-                <div class="invalid-feedback">fees
-                    {% for error in form.fees.errors %}
+                {{ form.patient_dob.label(class = "form-control-label") }}
+                {% if form.patient_dob.errors %}
+                {{ form.patient_dob(class = "form-control form-control-lg is-invalid", type = "date")}}
+                <div class="invalid-feedback">patient_dob
+                    {% for error in form.patient_dob.errors %}
                     <span> {{ error }}</span>
                     {% endfor %}
                 </div>
                 {% else %}
-                {{ form.fees(class = "form-control form-control-lg") }}
+                {{ form.patient_dob(class = "form-control form-control-lg") }}
                 {% endif %}
             </div>
+
+            <!-- patient_gender -->
             <div class="form-group">
-                {{ form.doctor_ssn.label(class = "form-control-label") }}
-                {% if form.doctor_ssn.errors %}
-                {{ form.doctor_ssn(class = "form-control form-control-lg is-invalid")}}
-                <div class="invalid-feedback">Doctor SSN
-                    {% for error in form.doctor_ssn.errors %}
+                {{ form.patient_gender.label(class="form-control-label") }}
+                {% if form.patient_gender.errors %}
+                    {{ form.patient_gender(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.patient_gender.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.patient_gender(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+
+            <!-- record_id -->
+            <div class="form-group">
+                {{ form.record_id.label(class = "form-control-label") }}
+                {% if form.record_id.errors %}
+                {{ form.record_id(class = "form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                    {% for error in form.record_id.errors %}
                     <span> {{ error }}</span>
                     {% endfor %}
                 </div>
                 {% else %}
-                {{ form.doctor_ssn(class = "form-control form-control-lg") }}
+                {{ form.record_id(class = "form-control form-control-lg") }}
                 {% endif %}
             </div>
+
+            <!-- form_id -->
             <div class="form-group">
-                {{ form.technician_ssn.label(class = "form-control-label") }}
-                {% if form.technician_ssn.errors %}
-                {{ form.technician_ssn(class = "form-control form-control-lg is-invalid")}}
-                <div class="invalid-feedback">Technician SSN
-                    {% for error in form.technician_ssn.errors %}
+                {{ form.form_id.label(class = "form-control-label") }}
+                {% if form.form_id.errors %}
+                {{ form.form_id(class = "form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                    {% for error in form.form_id.errors %}
                     <span> {{ error }}</span>
                     {% endfor %}
                 </div>
                 {% else %}
-                {{ form.technician_ssn(class = "form-control form-control-lg") }}
+                {{ form.form_id(class = "form-control form-control-lg") }}
                 {% endif %}
             </div>
+
+            <!-- date_taken -->
+            <div class="form-group">
+                {{ form.date_taken.label(class = "form-control-label") }}
+                {% if form.date_taken.errors %}
+                {{ form.date_taken(class = "form-control form-control-lg is-invalid", type = "date")}}
+                <div class="invalid-feedback">patient_dob
+                    {% for error in form.date_taken.errors %}
+                    <span> {{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.date_taken(class = "form-control form-control-lg") }}
+                {% endif %}
+            </div>
+
+            <!-- organ -->
+            <div class="form-group">
+                {{ form.organ.label(class = "form-control-label") }}
+                {% if form.organ.errors %}
+                {{ form.organ(class = "form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                    {% for error in form.organ.errors %}
+                    <span> {{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.organ(class = "form-control form-control-lg") }}
+                {% endif %}
+            </div>
+
+            <!-- thickness -->
+            <div class="form-group">
+                {{ form.thickness.label(class = "form-control-label") }}
+                {% if form.thickness.errors %}
+                {{ form.thickness(class = "form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                    {% for error in form.thickness.errors %}
+                    <span> {{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.thickness(class = "form-control form-control-lg") }}
+                {% endif %}
+            </div>
+
+            <!-- conclusion -->
+            <div class="form-group">
+                {{ form.conclusion.label(class = "form-control-label") }}
+                {% if form.conclusion.errors %}
+                {{ form.conclusion(class = "form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                    {% for error in form.conclusion.errors %}
+                    <span> {{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.conclusion(class = "form-control form-control-lg") }}
+                {% endif %}
+            </div>
+
+            <!-- contrast_injection -->
+            <div class="form-group">
+                {{ form.contrast_injection.label(class = "form-control-label") }}
+                {% if form.contrast_injection.errors %}
+                {{ form.contrast_injection(class = "form-control form-control-lg is-invalid")}}
+                <div class="invalid-feedback">
+                    {% for error in form.contrast_injection.errors %}
+                    <span> {{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.contrast_injection(class = "form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            
+            <!-- images -->
+            <div class="text-center">
+                <img style="width: 1000px; height:600px ;" src="{{ url_for('static', filename='patients_scans/'+scan.profile_image) }}" class="img-responsive mx-auto d-block">
+            </div>
+            {% if scan.profile_image == 'default.jpg' %}
+                <div class="form-group">
+                    {{ form.dicom_series.label() }}
+                    {{ form.dicom_series(class="form-control-file", webkitdirectory="", mozdirectory="") }}
+                    {% if form.dicom_series.errors %}
+                        {% for error in form.dicom_series.errors %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endif %}
+
             <div class="form-group">
                 {{form.submit(class= "btn btn-outline-info")}}
             </div>
         </fieldset>
     </form>
+    
 </div>
+
 {% endblock content %}

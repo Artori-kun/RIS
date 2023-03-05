@@ -1,58 +1,28 @@
-{% extends "superuser/layout_su.html" %}
+{% extends "layout.html" %}
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col md-12">
-            <div class="jumbotron p-3">
-                <h2> Manage <b>Doctors</b>
-                    <button type="button" class="btn btn-success float-right "
-                        onclick=location.href='{{url_for("addDoctor")}}'>Add New Doctor
-                    </button>
-                </h2>
+<style>
+    .css-serial{
+        counter-reset: serial-number;
+    }
+    .css-serial td:first-child:before{
+        counter-increment: serial-number;
+        content: counter(serial-number);
+    }
+    .aligncenter{
+        text-align: center;
+    }
 
-                <table class="table table-hover table-striped mydatatable">
-                    <thead class="thead-dark">
-                        <tr> 
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>SSN</th>
-                            <th>Salary</th>
-                            <th>Speciality</th>
-                            <th>Email</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in doctors %}
-                            <tr>
-                                <td>{{row.id}}</td>
-                                <td>{{row.name}}</td>
-                                <td>{{row.ssn}}</td>
-                                <td>${{row.salary }}</td>
-                                <td>{{row.speciality}}</td>
-                                <td>{{row.email}}</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                          Actions
-                                        </button>
-                                        <div class="dropdown-menu">
-                                          <a class="dropdown-item" href="{{url_for('doc_patients', id =row.id )}}">Patients</a>
-                                          <a class="dropdown-item" href="{{url_for('doc_update', id = row.id)}}">Edit</a>
-                                          <a class="dropdown-item" href="{{url_for('doc_disable', id = row.id)}}">Delete</a>
-                                        </div>
-                                      </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    th {
+        text-align: center;
+    }
 
+    td {
+        text-align: center;
+    }
+</style>
+<div class="container-fluid">
     <div class="row">
-        <div class="col md-12">
+        <div class="col lg-12">
             <div class="jumbotron p-3">
                 <h2> Manage <b>Technicians</b>
                     <button type="button" class="btn btn-success float-right "
@@ -66,9 +36,9 @@
                             <th>ID</th>
                             <th>Name</th>
                             <th>SSN</th>
-                            <th>Salary</th>
+                            <th>DoB</th>
                             <th>Email</th>
-                            <th>Address</th>
+                            <th>Gender</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -78,16 +48,16 @@
                                 <td>{{ row.id }}</td>
                                 <td>{{ row.name }}</td>
                                 <td>{{ row.ssn }}</td>
-                                <td>${{row.salary }}</td>
+                                <td>{{ row.dob.strftime('%Y-%m-%d') }}</td>
                                 <td>{{ row.email }}</td>
-                                <td>{{ row.address }}</td>
-                                <td>
+                                <td>{{ row.gender }}</td>
+                                <td class="aligncenter">
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                           Actions
                                         </button>
                                         <div class="dropdown-menu">
-                                          <a class="dropdown-item" href="{{url_for('tech_patients', id =row.id )}}">Patients</a>
+                                          <a class="dropdown-item" href="{{url_for('tech_scans', id =row.id )}}">Scans</a>
                                           <a class="dropdown-item" href="{{url_for('tech_update', id = row.id)}}">Edit</a>
                                           <a class="dropdown-item" href="{{url_for('tech_disable', id = row.id)}}">Delete</a>
                                         </div>
@@ -102,47 +72,48 @@
     </div>
 
     <div class="row">
-        <div class="col md-12">
+        <div class="col lg-12">
             <div class="jumbotron p-3">
-                <h2> Manage <b>Receptionists</b>
-                    <button type="button" class="btn btn-success float-right "
-                        onclick=location.href='{{url_for("addReceptionist")}}'>Add New Receptionist
-                    </button>
-                </h2>
+                <h2> Manage <b>Scans</b></h2>
 
-                <table class="table table-hover table-striped mydatatable">
+                <table class="table table-hover table-striped css-serial mydatatable">
                     <thead class="thead-dark">
-                        <tr> 
-                            <th>ID</th>
+                        <tr>
+                            <th>No.</th>
                             <th>Name</th>
                             <th>SSN</th>
-                            <th>Salary</th>
-                            <th>Email</th>
-                            <th>Address</th>
-                            <th>Actions</th>
+                            <th>Gender</th>
+                            <th>DoB</th>
+                            <th>Record Number</th>
+                            <th>Form Number</th>
+                            <th>Date Taken</th>
+                            <th>Organ</th>
+                            <th>Thickness</th>
+                            <th>Conclusion</th>
+                            <th>Contrast Injection</th>
+                            <th>Technician</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row in receptionists %}
+                        {% for row in scans %}
                             <tr>
-                                <td>{{ row.id }}</td>
-                                <td>{{ row.name }}</td>
-                                <td>{{ row.ssn }}</td>
-                                <td>${{row.salary }}</td>
-                                <td>{{ row.email }}</td>
-                                <td>{{ row.address }}</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                          Actions
-                                        </button>
-                                        <div class="dropdown-menu">
-                                          <a class="dropdown-item" href="{{url_for('recep_patients', id =row.id )}}">Patients</a>
-                                          <a class="dropdown-item" href="{{url_for('recep_update', id = row.id)}}">Edit</a>
-                                          <a class="dropdown-item" href="{{url_for('recep_disable', id = row.id)}}">Delete</a>
-                                        </div>
-                                      </div>
-                                </td>
+                                <td></td>
+                                <td>{{row.patient_name}}</td>
+                                <td>{{row.patient_ssn}}</td>
+                                <td>{{row.patient_gender}}</td>
+                                <td>{{row.patient_dob.strftime('%Y-%m-%d') }}</td>
+                                <td>{{row.record_id}}</td>
+                                <td>{{row.form_id}}</td>
+                                <td>{{row.date_taken.strftime('%Y-%m-%d')}}</td>
+                                <td>{{row.organ}}</td>
+                                <td style="text-align: center">{{row.thickness}}</td>
+                                <td>{{row.conclusion}}</td>
+                                {% if row.contrast_injection == true %}
+                                    <td style="text-align: center">T</td>
+                                {% else %}
+                                    <td style="text-align: center">F</td>
+                                {% endif %}
+                                <td>{{row.name}}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

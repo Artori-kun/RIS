@@ -14,17 +14,30 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
 
     {% if title %}
-        <title>Flask Blog - {{ title }}</title>
+        <title>MTA RISMed - {{ title }}</title>
     {% else %}
-        <title>Flask Blog</title>
+        <title>MTA RISMed</title>
     {% endif %}
+    {% if not current_user.is_authenticated %}
+    <style>
+      body {
+        background-image: url('static/images/Login.jpg');
+        background-repeat: no-repeat;
+        background-position: 50% 20%;
+        background-size: cover;
+      }
+    </style>
+  {% endif %}
 </head>
 <body>
     <header class="site-header">
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
-        <div class="container">
+        <div class="container-fluid">
           {% block homepage %}
-          <a class="navbar-brand mr-4" href="/">Radiology</a>
+          <a class="navbar-brand mr-4" href="/">
+            <img src="{{ url_for('static', filename='images/MTA_logo.jpg') }}" width="30" height="30" class="d-inline-block align-top" alt="">
+            MTA Radiology
+          </a>
           {% endblock homepage %}
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -35,18 +48,20 @@
               <a class="nav-item nav-link" href="/about">About</a> -->
             </div>
             <!-- Navbar Right Side -->
-            <div class="navbar-nav">
+            <ul class="navbar-nav">
               {% if current_user.is_authenticated %}
-                {% block navbar %}{% endblock navbar %}  
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                </li>
               {% else %}
                 <a class="nav-item nav-link" href="/login">Login</a>
               {% endif %}
-            </div>
+            </ul>
           </div>
         </div>
       </nav>
     </header>
-    <main role="main" class="container mb-3 mt-3">
+    <main role="main" class="container-fluid mb-3 mt-3">
       <!-- <div class="row">
         <div class="col-md-8">
           

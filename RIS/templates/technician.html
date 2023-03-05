@@ -1,47 +1,81 @@
 {% extends "layout.html" %}
-{% block homepage %}
-    <a class="navbar-brand mr-4" href="{{ url_for('technician') }}">Radiology</a>
-{% endblock homepage %}
-{% block navbar %}
-    <a class="nav-item nav-link" href="{{ url_for('technician_history') }}">History</a>
-    <a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
-{% endblock navbar %}
 {% block content %}
+<style>
+    .css-serial{
+        counter-reset: serial-number;
+    }
+    .css-serial td:first-child:before{
+        counter-increment: serial-number;
+        content: counter(serial-number);
+    }
+    .aligncenter{
+        text-align: center;
+    }
 
-<div class="container" style= "border-collapse: collapse;" id = "responsive">
+    th {
+        text-align: center;
+    }
+
+    td {
+        text-align: center;
+    }
+</style>
+<div class="container-fluid" style= "border-collapse: collapse;" id = "responsive">
     <div class="row">
         <div class="col md-12">
             <div class="jumbotron p-3"> 
-                <h2> Add <b>Patients  Scans</b></h2>
-                <table class="table table-hover table-striped mydatatable" >
+                <h2> Manage <b> Scans</b>
+                    <button type="button" class="btn btn-success float-right "
+                        onclick=location.href='{{url_for("add_scan")}}'>Add New Scan
+                    </button>
+                </h2>
+                <table class="table table-hover table-striped css-serial">
                     <thead class="thead-dark">
                         <tr>
-                            
-                            <th>ID</th>
+                            <th>No.</th>
                             <th>Name</th>
-                            <th>Reservation Date</th>
-                            <th>Scan Type</th>
-                            <th>Doctor</th>
-                            <th>Scan Fees</th>
-                            <th>Action</th>
+                            <th>SSN</th>
+                            <th>Gender</th>
+                            <th>DoB</th>
+                            <th>Record Number</th>
+                            <th>Form Number</th>
+                            <th>Date Taken</th>
+                            <th>Organ</th>
+                            <th>Thickness</th>
+                            <th>Conclusion</th>
+                            <th>Contrast Injection</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row in p_data %}
-                        <!-- {% if row.image_file == 'default.jpg' %} -->
-                        <tr>
-                            <td>{{row.patient.id}}</td>
-                            <td>{{row.patient.name}}</td>
-                            <td>{{row.scan_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                            <td>{{row.scan_type}}</td>
-                            <td>{{row.doctor.name}}</td>
-                            <td>{{row.fees}}</td>
-                            <td>
-                                <a href="{{url_for('add_scan_img', id=row.id )}}" class="btn btn-danger" > Add Patient Scan</a>
-                            </td>
-                        </tr>
-                        <!-- {% endif %} -->
+                        {% for row in scans %}
+                            <tr>
+                                <td></td>
+                                <td>{{row.patient_name}}</td>
+                                <td>{{row.patient_ssn}}</td>
+                                <td>{{row.patient_gender}}</td>
+                                <td>{{row.patient_dob.strftime('%Y-%m-%d') }}</td>
+                                <td>{{row.record_id}}</td>
+                                <td>{{row.form_id}}</td>
+                                <td>{{row.date_taken.strftime('%Y-%m-%d')}}</td>
+                                <td>{{row.organ}}</td>
+                                <td>{{row.thickness}}</td>
+                                <td>{{row.conclusion}}</td>
+                                <td>{{row.contrast_injection}}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Actions
+                                        </button>
+                                        <div class="dropdown-menu">
+                                          <a class="dropdown-item" href="{{url_for('scan_update', scan_id = row.id)}}">Edit</a>
+                                          <a class="dropdown-item" href="{{url_for('scan_delete', scan_id = row.id)}}">Delete</a>
+                                        </div>
+                                      </div>
+                                </td>
+                            </tr>
                         {% endfor %}
+                    </tbody>
                 </table>
              </div>
         </div>

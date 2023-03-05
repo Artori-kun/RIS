@@ -1,15 +1,14 @@
 from __future__ import print_function
 from flask import render_template, url_for, flash, redirect, request, abort
 from RIS import app, db, bcrypt
-from RIS.forms import (LoginForm, ReportForm, NewDoctor, ResetPasswordForm, NewPatient,
-                       PatientScanForm, UploadScanForm, NewReceptionist, NewTechnician)
-from RIS.models import Technician, User, Patient, Doctor, Receptionist, Scan
+from RIS.forms import (LoginForm, ResetPasswordForm, AddScanForm, NewTechnician)
+from RIS.models import Technician, User, Scan
 from flask_login import login_user, current_user, logout_user, login_required
 import hashlib
 import csv
 
 
-from RIS.utils import save_picture, save_profile_picture, calculate_age, send_reset_email, send_credentials
+import RIS.utils as utils
 
 # ---------------------------- Start Util Routes ---------------------------------------#
 #                   In this Section are the helper utility routes
@@ -21,14 +20,8 @@ def login():
     if current_user.is_authenticated:
         if current_user.email[-5] == 'A':
             return redirect(url_for('admin'))
-        elif current_user.email[-5] == 'D':
-            return redirect(url_for('home'))
-        elif current_user.email[-5] == 'R':
-            return redirect(url_for('recep'))
         elif current_user.email[-5] == 'T':
             return redirect(url_for('technician'))
-        elif current_user.email[-5] == 'P':
-            return redirect(url_for('patient_profile'))
     form = LoginForm()
     if form.validate_on_submit():
         with open('passwords.csv', 'r', encoding='utf-8') as csv_file:
@@ -37,22 +30,13 @@ def login():
                 if bcrypt.check_password_hash(line[0], form.password.data):
                     user = User.query.filter_by(email=form.email.data).first()
                     if user.active is False:
-                        raise('This user is disabled. Please contact administrator for details.')
-                    elif form.email.data[-5] == 'D':
-                        email = Doctor.query.filter_by(
-                            id=form.password.data).first()
-                    elif form.email.data[-5] == 'R':
-                        email = Receptionist.query.filter_by(
-                            id=form.password.data).first()
+                        raise("This user is disabled. Please contact administrator for details.")
                     elif form.email.data[-5] == 'T':
                         email = Technician.query.filter_by(
                             id=form.password.data).first()
-                    elif form.email.data[-5] == 'P':
-                        email = Patient.query.filter_by(
-                            id=form.password.data).first()
                     else:
                         raise('Email is not valid')
-                    send_reset_email(user, email.email)
+                    utils.send_reset_email(user, email.email)
                     flash(
                         'An email has been sent with instructions to reset your password', 'info')
                     return redirect(url_for('login'))
@@ -63,14 +47,8 @@ def login():
             login_user(user, remember=form.remember.data)
             if current_user.email[-5] == 'A':
                 return redirect(url_for('admin'))
-            elif current_user.email[-5] == 'D':
-                return redirect(url_for('home'))
-            elif current_user.email[-5] == 'R':
-                return redirect(url_for('recep'))
             elif current_user.email[-5] == 'T':
                 return redirect(url_for('technician'))
-            elif current_user.email[-5] == 'P':
-                return redirect(url_for('patient_profile'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
@@ -117,47 +95,47 @@ def root():
 # ---------------------------- Start Doctor Routes --------------------------------------#
 #                   In this Section are routes of the doctors
 # ---------------------------------------------------------------------------------------#
-@app.route("/doctor")
-@login_required
-def home():
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'D':
-            all_patients_scans = Scan.query.filter_by(
-                doctor=current_user).all()
-            print(url_for('home'))
-            return render_template("doctor.html", p_data=all_patients_scans)
-        else:
-            abort(403)
+# @app.route("/doctor")
+# @login_required
+# def home():
+#     if current_user.is_authenticated:
+#         if current_user.email[-5] == 'D':
+#             all_patients_scans = Scan.query.filter_by(
+#                 doctor=current_user).all()
+#             print(url_for('home'))
+#             return render_template("doctor.html", p_data=all_patients_scans)
+#         else:
+#             abort(403)
 
 
-@app.route("/doctors/report/<scan_id>", methods=['GET', 'POST'])
-@login_required
-def Report(scan_id):
-    scan = Scan.query.get_or_404(scan_id)
-    scanimage = url_for('static', filename='patients_scans/' + scan.image_file)
-    form = ReportForm()
-    if form.validate_on_submit():
-        scan.report_title = form.title.data
-        scan.report_content = form.content.data
-        scan.report_summary = form.summary.data
-        db.session.commit()
-        flash('Your Report has been added', 'success')
-        return redirect(url_for('home'))
-    elif request.method == 'GET':
-        form.title.data = scan.report_title
-        form.content.data = scan.report_content
-        form.summary.data = scan.report_summary
-    return render_template('report.html', title='View Report',
-                           form=form, legend='View Report', scan=scanimage)
+# @app.route("/doctors/report/<scan_id>", methods=['GET', 'POST'])
+# @login_required
+# def Report(scan_id):
+#     scan = Scan.query.get_or_404(scan_id)
+#     scanimage = url_for('static', filename='patients_scans/' + scan.image_file)
+#     form = ReportForm()
+#     if form.validate_on_submit():
+#         scan.report_title = form.title.data
+#         scan.report_content = form.content.data
+#         scan.report_summary = form.summary.data
+#         db.session.commit()
+#         flash('Your Report has been added', 'success')
+#         return redirect(url_for('home'))
+#     elif request.method == 'GET':
+#         form.title.data = scan.report_title
+#         form.content.data = scan.report_content
+#         form.summary.data = scan.report_summary
+#     return render_template('report.html', title='View Report',
+#                            form=form, legend='View Report', scan=scanimage)
 
 
-@app.route("/doctor/history")
-@login_required
-def doctor_history():
-    scans = Scan.query.filter_by(doctor=current_user)\
-        .order_by(Scan.scan_date.desc())
-    # scans = Scan.query.all()
-    return render_template('doctor_history.html', scans=scans)
+# @app.route("/doctor/history")
+# @login_required
+# def doctor_history():
+#     scans = Scan.query.filter_by(doctor=current_user)\
+#         .order_by(Scan.scan_date.desc())
+#     # scans = Scan.query.all()
+#     return render_template('doctor_history.html', scans=scans)
 
 # ---------------------------- End Doctor Routes ----------------------------------------#
 
@@ -166,121 +144,121 @@ def doctor_history():
 #                   In this Section are routes of the receptionists
 # ---------------------------------------------------------------------------------------#
 
-@app.route("/recep")
-@login_required
-def recep():
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'R':
-            all_patients_scans = Scan.query.all()
-            return render_template("receptionist.html", p_data=all_patients_scans)
-        else:
-            abort(403)
+# @app.route("/recep")
+# @login_required
+# def recep():
+#     if current_user.is_authenticated:
+#         if current_user.email[-5] == 'R':
+#             all_patients_scans = Scan.query.all()
+#             return render_template("receptionist.html", p_data=all_patients_scans)
+#         else:
+#             abort(403)
 
 
-@app.route("/print/<int:id>")
-@login_required
-def print_report(id):
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'R':
-            scan = Scan.query.filter_by(id=id).first()
-            image = url_for(
-                'static', filename='patients_scans/' + scan.image_file)
-            return render_template("print.html", scan=scan, image=image)
-        else:
-            abort(403)
+# @app.route("/print/<int:id>")
+# @login_required
+# def print_report(id):
+#     if current_user.is_authenticated:
+#         if current_user.email[-5] == 'R':
+#             scan = Scan.query.filter_by(id=id).first()
+#             image = url_for(
+#                 'static', filename='patients_scans/' + scan.image_file)
+#             return render_template("print.html", scan=scan, image=image)
+#         else:
+#             abort(403)
 
 
-@app.route("/recep/addPatient", methods=['GET', 'POST'])
-@login_required
-def addPatient():
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'R':
-            form = NewPatient()
-            if form.validate_on_submit():
-                password = int(hashlib.sha1(
-                    form.ssn.data.encode()).hexdigest(), 16) % (10 ** 8)
-                mail = f'{password}@P.com'
-                hashed_password = bcrypt.generate_password_hash(
-                    str(password)).decode('utf-8')
-                age = calculate_age(form.dob.data)
-                patient = Patient(id=password, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
-                                  dob=form.dob.data, gender=form.gender.data, address=form.address.data, age=age)
-                user = User(id=password, username=form.name.data,
-                            email=mail, password=hashed_password)
-                db.session.add(patient)
-                db.session.add(user)
-                db.session.commit()
-                send_credentials(form.email.data, mail,
-                                 password, form.name.data)
-                with open("passwords.csv", 'a+', encoding='utf-8', newline='') as csv_file:
-                    csv_writer = csv.writer(csv_file)
-                    csv_writer.writerow([hashed_password])
-                flash(
-                    f'Patient has been created mail={mail}, password={password}', 'success')
-                return redirect(url_for('patient_scan', patient_id=patient.id))
-            return render_template("addPatient.html", form=form, legend="Add New Patient")
-        else:
-            abort(403)
+# @app.route("/recep/addPatient", methods=['GET', 'POST'])
+# @login_required
+# def addPatient():
+#     if current_user.is_authenticated:
+#         if current_user.email[-5] == 'R':
+#             form = NewPatient()
+#             if form.validate_on_submit():
+#                 password = int(hashlib.sha1(
+#                     form.ssn.data.encode()).hexdigest(), 16) % (10 ** 8)
+#                 mail = f'{password}@P.com'
+#                 hashed_password = bcrypt.generate_password_hash(
+#                     str(password)).decode('utf-8')
+#                 age = calculate_age(form.dob.data)
+#                 patient = Patient(id=password, name=form.name.data, ssn=form.ssn.data, email=form.email.data,
+#                                   dob=form.dob.data, gender=form.gender.data, address=form.address.data, age=age)
+#                 user = User(id=password, username=form.name.data,
+#                             email=mail, password=hashed_password)
+#                 db.session.add(patient)
+#                 db.session.add(user)
+#                 db.session.commit()
+#                 send_credentials(form.email.data, mail,
+#                                  password, form.name.data)
+#                 with open("passwords.csv", 'a+', encoding='utf-8', newline='') as csv_file:
+#                     csv_writer = csv.writer(csv_file)
+#                     csv_writer.writerow([hashed_password])
+#                 flash(
+#                     f'Patient has been created mail={mail}, password={password}', 'success')
+#                 return redirect(url_for('patient_scan', patient_id=patient.id))
+#             return render_template("addPatient.html", form=form, legend="Add New Patient")
+#         else:
+#             abort(403)
 
 
-@app.route("/delete/<id>/", methods=['POST', "GET"])
-@login_required
-def delete_patient_scan(id):
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'R':
-            scan = Scan.query.get(id)
-            db.session.delete(scan)
-            db.session.commit()
-            flash("Your data has been deleted!", "success")
-            return redirect(url_for("recep"))
-        else:
-            abort(403)
+# @app.route("/delete/<id>/", methods=['POST', "GET"])
+# @login_required
+# def delete_patient_scan(id):
+#     if current_user.is_authenticated:
+#         if current_user.email[-5] == 'R':
+#             scan = Scan.query.get(id)
+#             db.session.delete(scan)
+#             db.session.commit()
+#             flash("Your data has been deleted!", "success")
+#             return redirect(url_for("recep"))
+#         else:
+#             abort(403)
 
 
-@app.route("/patient/<int:id>/")
-@login_required
-def visit_patient(id):
-    patient = Patient.query.filter_by(id=id).first()
-    patient_data = Scan.query.filter_by(patient=patient).all()
-    print(patient_data)
-    return render_template("patient_recep.html", p_data=patient_data)
+# @app.route("/patient/<int:id>/")
+# @login_required
+# def visit_patient(id):
+#     patient = Patient.query.filter_by(id=id).first()
+#     patient_data = Scan.query.filter_by(patient=patient).all()
+#     print(patient_data)
+#     return render_template("patient_recep.html", p_data=patient_data)
 
 
-@app.route("/recep/new_scan/<int:patient_id>", methods=['GET', 'POST'])
-@login_required
-def patient_scan(patient_id):
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'R':
-            patient = Patient.query.get(patient_id)
-            form = PatientScanForm()
-            if form.validate_on_submit():
-                patient = Patient.query.filter_by(ssn=form.ssn.data).first()
-                doctor = Doctor.query.filter_by(
-                    ssn=form.doctor_ssn.data).first()
-                technician = Technician.query.filter_by(
-                    ssn=form.technician_ssn.data).first()
-                receptionist = Receptionist.query.filter_by(
-                    id=current_user.id).first()
-                if patient and doctor and technician:
-                    scan = Scan(scan_type=form.scan_type.data, fees=form.fees.data, patient=patient, doctor=doctor, technician=technician,
-                                receptionist=receptionist)
-                    db.session.add(scan)
-                    db.session.commit()
-                    flash(
-                        f'{scan.patient.name} {scan.scan_type} scan has been added, Technician {scan.technician.name} Notified!', 'success')
-                    # create email xxxx
-                    return redirect(url_for('recep'))
-                else:
-                    flash(
-                        'This is new patient please register the patient first', 'danger')
-                    return redirect(url_for('addPatient'))
-            elif request.method == 'GET' and patient:
-                form.ssn.data = patient.ssn
-            return render_template("new_scan.html", form=form)
-        else:
-            abort(403)
-    else:
-        return render_template('login')
+# @app.route("/recep/new_scan/<int:patient_id>", methods=['GET', 'POST'])
+# @login_required
+# def patient_scan(patient_id):
+#     if current_user.is_authenticated:
+#         if current_user.email[-5] == 'R':
+#             patient = Patient.query.get(patient_id)
+#             form = PatientScanForm()
+#             if form.validate_on_submit():
+#                 patient = Patient.query.filter_by(ssn=form.ssn.data).first()
+#                 doctor = Doctor.query.filter_by(
+#                     ssn=form.doctor_ssn.data).first()
+#                 technician = Technician.query.filter_by(
+#                     ssn=form.technician_ssn.data).first()
+#                 receptionist = Receptionist.query.filter_by(
+#                     id=current_user.id).first()
+#                 if patient and doctor and technician:
+#                     scan = Scan(scan_type=form.scan_type.data, fees=form.fees.data, patient=patient, doctor=doctor, technician=technician,
+#                                 receptionist=receptionist)
+#                     db.session.add(scan)
+#                     db.session.commit()
+#                     flash(
+#                         f'{scan.patient.name} {scan.scan_type} scan has been added, Technician {scan.technician.name} Notified!', 'success')
+#                     # create email xxxx
+#                     return redirect(url_for('recep'))
+#                 else:
+#                     flash(
+#                         'This is new patient please register the patient first', 'danger')
+#                     return redirect(url_for('addPatient'))
+#             elif request.method == 'GET' and patient:
+#                 form.ssn.data = patient.ssn
+#             return render_template("new_scan.html", form=form)
+#         else:
+#             abort(403)
+#     else:
+#         return render_template('login')
 
 # ---------------------------- End Receptionist Routes ----------------------------------#
 
@@ -294,53 +272,103 @@ def patient_scan(patient_id):
 def technician():
     if current_user.is_authenticated:
         if current_user.email[-5] == 'T':
-            all_patients_scans = Scan.query.filter_by(technician=current_user)
-            return render_template("technician.html", p_data=all_patients_scans)
+            all_patients_scans = Scan.query.filter_by(technician_id=current_user.id).all()
+            return render_template("technician.html", scans=all_patients_scans)
         else:
             abort(403)
     else:
         return render_template('login')
 
 
-@app.route("/tech/history")
-def technician_history():
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'T':
-            scans = Scan.query.filter_by(
-                technician=current_user).order_by(Scan.scan_date.desc())
-            return render_template('technician_history.html', scans=scans)
-        else:
-            abort(403)
-    else:
-        return render_template('login')
+# @app.route("/tech/history")
+# def technician_history():
+#     if current_user.is_authenticated:
+#         if current_user.email[-5] == 'T':
+#             scans = Scan.query.filter_by(
+#                 technician=current_user).order_by(Scan.scan_date.desc())
+#             return render_template('technician_history.html', scans=scans)
+#         else:
+#             abort(403)
+#     else:
+#         return render_template('login')
 
 
-@app.route("/Technician/scan_img/<int:id>/", methods=['GET', 'POST'])
+@app.route("/technician/add_scan/", methods=['GET', 'POST'])
 @login_required
-def add_scan_img(id):
+def add_scan():
     if current_user.is_authenticated:
         if current_user.email[-5] == 'T':
-            scan = Scan.query.filter_by(id=id).first()
-            form = UploadScanForm()
+            # technician = Technician.query.filter_by(id=current_user.id).first()
+            form = AddScanForm()
+            
+            series_uid = 'UNKNOWN'
+            profile_image = 'default.jpg'
+            scan = Scan()
+            scan.series_id = series_uid
+            scan.profile_image = profile_image
+            
             if form.validate_on_submit():
-                if form.pictures.data:
-                    
-                    profile_pic = form.pictures.data[int(len(form.pictures.data) / 2)]
-                    profile_pic = save_profile_picture(profile_pic)
-                    scan.image_file = profile_pic.replace('.dcm', '.jpg')
-                    
-                    for picture in form.pictures.data:
-                        save_picture(picture)
-                        # scan.image_file = picture_file
+                ## generate (not so) encrypted ID
+                encrypt_id = utils.encrypt_id(form=form)
+            
+                if form.dicom_series.data:
+                    try:
+                        series_uid, profile_image = utils.save_picture(form.dicom_series.data)
+                    except Exception as e:
+                        if type(e) is ValueError:
+                            flash("The dicom files you have chosen do not belong to a single dicom series", 'danger')
+                            return redirect(url_for('add_scan'))
+                
+                scan.patient_name = form.patient_name.data
+                scan.patient_ssn = form.patient_ssn.data
+                scan.patient_gender = form.patient_gender.data
+                scan.patient_dob = form.patient_dob.data
+                scan.record_id = form.record_id.data
+                scan.form_id = form.form_id.data
+                scan.date_taken = form.date_taken.data
+                scan.organ = form.organ.data
+                scan.thickness = form.thickness.data
+                scan.encrypt_id = encrypt_id
+                scan.conclusion = form.conclusion.data
+                scan.contrast_injection = form.contrast_injection.data
+                scan.series_id = series_uid
+                scan.profile_image = profile_image
+                scan.technician_id = current_user.id
+                
+                # scan = Scan(
+                #     patient_name = form.patient_name.data,
+                #     patient_ssn = form.patient_ssn.data,
+                #     patient_gender = form.patient_gender.data,
+                #     patient_dob = form.patient_dob.data,
+                #     record_id = form.record_id.data,
+                #     form_id = form.form_id.data,
+                #     date_taken = form.date_taken.data,
+                #     organ = form.organ.data,
+                #     thickness = form.thickness.data,
+                #     encrypt_id = encrypt_id,
+                #     conclusion = form.conclusion.data,
+                #     contrast_injection = form.contrast_injection.data,
+                #     series_id = series_uid,
+                #     profile_image = profile_image,
+                #     technician = technician
+                # )
+                
+                db.session.add(scan)
                 db.session.commit()
-                flash(
-                    f'{scan.patient.name} {scan.scan_type} Scan has been uploaded! Doctor {scan.doctor.name} notified', 'success')
+                flash(f'Scan has been uploaded!', 'success')
                 return redirect(url_for('technician'))
             #  image_file = url_for('static', filename='patients_scans/'+ scan.image_file)
-            return render_template('scan_img.html', title='Scan Img', scan=scan, form=form)
+            return render_template('new_scan.html', title='New Scan', scan=scan, form=form)
         else:
             abort(403)
 
+@app.route("/technician/edit_scan/<int:scan_id>", methods=['GET', 'POST'])
+def scan_update(scan_id):
+    return redirect(url_for('technician'))
+
+@app.route("/technician/delete_scan/<int:scan_id>", methods=['GET', 'POST'])
+def scan_delete(scan_id):
+    return redirect(url_for('technician'))
 # ---------------------------- End Technician Routes ------------------------------------#
 
 
@@ -348,16 +376,16 @@ def add_scan_img(id):
 #                   In this Section are routes of the patient
 # ---------------------------------------------------------------------------------------#
 
-@app.route("/patient")
-@login_required
-def patient_profile():
-    if current_user.is_authenticated:
-        if current_user.email[-5] == 'P':
-            all_patients_scans = Scan.query.filter_by(patient=current_user)
-            patient_name = Patient.query.filter_by(id=current_user.id).first()
-            return render_template("patient_profile.html", p_data=all_patients_scans, name=patient_name.name)
-        else:
-            abort(403)
+# @app.route("/patient")
+# @login_required
+# def patient_profile():
+#     if current_user.is_authenticated:
+#         if current_user.email[-5] == 'P':
+#             all_patients_scans = Scan.query.filter_by(patient=current_user)
+#             patient_name = Patient.query.filter_by(id=current_user.id).first()
+#             return render_template("patient_profile.html", p_data=all_patients_scans, name=patient_name.name)
+#         else:
+#             abort(403)
 
 # ---------------------------- End Patient Routes ------------------------------------#
 
