@@ -1,14 +1,15 @@
 from __future__ import print_function
 from flask import render_template, url_for, flash, redirect, request, abort
 from RIS import app, db, bcrypt
-from RIS.forms import (LoginForm, ResetPasswordForm, AddScanForm, NewTechnician)
+from RIS.forms import (LoginForm, ResetPasswordForm, AddScanForm, UpdateScanForm)
 from RIS.models import Technician, User, Scan
 from flask_login import login_user, current_user, logout_user, login_required
 import hashlib
 import csv
 
 
-import RIS.utils as utils
+import RIS.utils.utils as utils
+import RIS.utils.util_cbir as util_cbir
 
 # ---------------------------- Start Util Routes ---------------------------------------#
 #                   In this Section are the helper utility routes
@@ -335,39 +336,73 @@ def add_scan():
                 scan.profile_image = profile_image
                 scan.technician_id = current_user.id
                 
-                # scan = Scan(
-                #     patient_name = form.patient_name.data,
-                #     patient_ssn = form.patient_ssn.data,
-                #     patient_gender = form.patient_gender.data,
-                #     patient_dob = form.patient_dob.data,
-                #     record_id = form.record_id.data,
-                #     form_id = form.form_id.data,
-                #     date_taken = form.date_taken.data,
-                #     organ = form.organ.data,
-                #     thickness = form.thickness.data,
-                #     encrypt_id = encrypt_id,
-                #     conclusion = form.conclusion.data,
-                #     contrast_injection = form.contrast_injection.data,
-                #     series_id = series_uid,
-                #     profile_image = profile_image,
-                #     technician = technician
-                # )
-                
                 db.session.add(scan)
                 db.session.commit()
                 flash(f'Scan has been uploaded!', 'success')
+                
+                util_cbir.register_img(scan.series_id)
+                
                 return redirect(url_for('technician'))
             #  image_file = url_for('static', filename='patients_scans/'+ scan.image_file)
             return render_template('new_scan.html', title='New Scan', scan=scan, form=form)
         else:
             abort(403)
+    else:
+        redirect(url_for('login'))
 
-@app.route("/technician/edit_scan/<int:scan_id>", methods=['GET', 'POST'])
+@app.route("/technician/update_scan/<int:scan_id>", methods=['GET', 'POST'])
 def scan_update(scan_id):
-    return redirect(url_for('technician'))
+    if current_user.is_authenticated:
+        if current_user.email[-5] == 'T':
+            scan = Scan.query.filter_by(id=scan_id).first()
+            
+            if scan == None:
+                abort(404)
+            
+            form = UpdateScanForm(obj=scan)
+            if form.validate_on_submit():
+                form.populate_obj(scan)
+                
+                encrypt_id = utils.encrypt_id(form=form)
+                scan.encrypt_id = encrypt_id
+            
+                if form.dicom_series.data:
+                    try:
+                        series_uid, profile_image = utils.save_picture(form.dicom_series.data)
+                        scan.series_uid = series_uid
+                        scan.profile_image = profile_image
+                    except Exception as e:
+                        print(e)
+                        # if type(e) is ValueError:
+                        flash("The dicom files you have chosen do not belong to a single dicom series", 'danger')
+                        return redirect(url_for('scan_update', scan_id=scan_id))
+
+                db.session.commit()
+                flash(f'Scan has been updated!', 'success')
+                
+                util_cbir.register_img(scan.series_id)
+                
+                return redirect(url_for('technician'))
+            return render_template("new_scan.html", title="Update Scan",scan=scan, form=form)
+        else:
+            abort(403)
+    else:
+        redirect(url_for('login'))
+    
 
 @app.route("/technician/delete_scan/<int:scan_id>", methods=['GET', 'POST'])
 def scan_delete(scan_id):
+    if current_user.is_authenticated:
+        if current_user.email[-5] == 'T':
+            scan = Scan.query.get(scan_id)
+            
+            db.session.delete(scan)
+            db.session.commit()
+            
+            flash("Your scan has been deleted!", "success")
+            return redirect(url_for('technician'))
+        else:
+            abort(403)
     return redirect(url_for('technician'))
 # ---------------------------- End Technician Routes ------------------------------------#
 

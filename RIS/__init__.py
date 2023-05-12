@@ -35,4 +35,4 @@ login_manager.login_message_category = 'info'
 mail = Mail(app)
 migrate = Migrate(app, db)
 
-from RIS.routes import routes, routes_admin
+from RIS.routes import routes, routes_admin, routes_cbir

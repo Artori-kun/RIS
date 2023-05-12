@@ -181,17 +181,15 @@
             <div class="text-center">
                 <img style="width: 1000px; height:600px ;" src="{{ url_for('static', filename='patients_scans/'+scan.profile_image) }}" class="img-responsive mx-auto d-block">
             </div>
-            {% if scan.profile_image == 'default.jpg' %}
-                <div class="form-group">
-                    {{ form.dicom_series.label() }}
-                    {{ form.dicom_series(class="form-control-file", webkitdirectory="", mozdirectory="") }}
-                    {% if form.dicom_series.errors %}
-                        {% for error in form.dicom_series.errors %}
-                            <span class="text-danger">{{ error }}</span>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            {% endif %}
+            <div class="form-group">
+                {{ form.dicom_series.label() }}
+                {{ form.dicom_series(class="form-control-file", webkitdirectory="", mozdirectory="") }}
+                {% if form.dicom_series.errors %}
+                    {% for error in form.dicom_series.errors %}
+                        <span class="text-danger">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
 
             <div class="form-group">
                 {{form.submit(class= "btn btn-outline-info")}}

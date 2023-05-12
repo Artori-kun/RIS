@@ -2,9 +2,15 @@
 __pycache__/
 *.py[cod]
 *$py.class
-static/patients_scans/
+RIS/static/patients_scans/
+!RIS/static/patients_scans/default.jpg
+RIS/static/temps/
 /RIS/__init__.py
 
+RIS/cbir_feature/**
+!RIS/cbir_feature/.gitkepp
+
+*.pth
 
 # C extensions
 *.so

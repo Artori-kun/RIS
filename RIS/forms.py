@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, MultipleFileField, SelectField
 from wtforms.fields.core import IntegerField, DecimalField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, InputRequired
-from RIS.models import User, Technician
+from RIS.models import User, Technician, Scan
 from wtforms.fields.html5 import DateField, DateTimeLocalField
 from flask_wtf.file import FileField, FileAllowed
 # import wtforms
@@ -183,6 +183,34 @@ class AddScanForm(FlaskForm):
     #     ssn = Doctor.query.filter_by(ssn=ssn.data, active=True).first()
     #     if not ssn:
     #         raise ValidationError("The doctor does not exist or active")
+
+class UpdateScanForm(FlaskForm):
+    patient_ssn = StringField("SSN", validators=[DataRequired(), Length(min=12, max=12)])
+    patient_name = StringField("Patient Name", validators = [DataRequired(), Length(min=1, max=50)])
+    patient_dob = DateField("Patient DoB", validators = [DataRequired()])
+    patient_gender = SelectField("Patient Gender", choices=[("Male", "Male"), ("Female", "Female")])
+    
+    record_id = StringField("Record Id", validators=[DataRequired(), Length(min=8, max=8)])
+    form_id = StringField("Form Id", validators=[DataRequired(), Length(min=8, max=8)])
+    date_taken = DateField("Date Taken", validators = [DataRequired()])
+    organ = SelectField("Organ", choices=[("Sọ mặt", "Sọ mặt"), ("Mặt hàm", "Mặt hàm")])
+    thickness = DecimalField("Thickness", validators=[DataRequired()])
+    conclusion = StringField("Conclusion", validators=[DataRequired()])
+    contrast_injection = SelectField(
+        "Contrast Injection", 
+        choices=[(True, "Có"), (False, "Không")], 
+        validators=[InputRequired()],
+        coerce=bool)
+    
+    dicom_series = MultipleFileField('Choose Scan to Upload', validators=[FileAllowed(['dcm'])])
+    
+    submit = SubmitField("Update")
+    
+    current = Scan()
+    
+    def populate_obj(self, obj):
+        self.current = obj
+        super().populate_obj(obj)
 
 # class UploadScanForm(FlaskForm):
 #     pictures = MultipleFileField('Choose Scan to Upload', validators=[FileAllowed(['dcm'])])

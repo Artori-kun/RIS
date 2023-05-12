@@ -9,6 +9,7 @@ from datetime import date
 from flask_mail import Message
 from flask import url_for
 import pydicom
+import shutil
 
 def calculate_age(born):
     today = date.today()
@@ -52,9 +53,9 @@ def convert_series(path):
     
     return names, dirnames[0]
 
-def convert_dcm_jpg(path):
-    name = path.split('/')[-1]
-    name = name.replace('.dcm', '')
+def convert_dcm_jpg(path, name):
+    # name = path.split('/')[-1]
+    # name = name.replace('.dcm', '')
     
     im = pydicom.dcmread(path)
 
@@ -66,12 +67,13 @@ def convert_dcm_jpg(path):
     final_image = Image.fromarray(final_image)
     
     final_image.save(os.path.join(app.root_path, 'static/patients_scans/' + name + '.jpg'))
+    print("Saved")
 
     # return final_image
     
 def import_dcm(dcm_path):
     orthanc = Orthanc('http://localhost:8042')
-    orthanc.setup_credentials('salim', 'salim')  # If needed
+    # orthanc.setup_credentials('salim', 'salim')  # If needed
     
     # orthanc.setup_credentials(os.environ.get('ORTHANC_USERNAME'),
     #                           os.environ.get('ORTHANC_PWD'))
@@ -79,26 +81,26 @@ def import_dcm(dcm_path):
     with open(dcm_path, 'rb') as file_handler:
         orthanc.post_instances(file_handler.read())
 
-def save_profile_picture(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
+# def save_profile_picture(form_picture):
+#     random_hex = secrets.token_hex(8)
+#     _, f_ext = os.path.splitext(form_picture.filename)
+#     picture_fn = random_hex + f_ext
     
-    # save dcm to temp
-    picture_path = os.path.join(
-        app.root_path, 'static/temps', picture_fn)
-    print(picture_path)
-    form_picture.save(picture_path)
+#     # save dcm to temp
+#     picture_path = os.path.join(
+#         app.root_path, 'static/temps', picture_fn)
+#     print(picture_path)
+#     form_picture.save(picture_path)
     
-    # convert to jpg and store at patients_scans
-    convert_dcm_jpg(picture_path)
-    os.remove(picture_path)
-    # try:
-    #     import_dcm(picture_path)
-    #     print('imported')
-    # except Exception as e:
-    #     print(e)
-    return picture_fn
+#     # convert to jpg and store at patients_scans
+#     convert_dcm_jpg(picture_path)
+#     os.remove(picture_path)
+#     # try:
+#     #     import_dcm(picture_path)
+#     #     print('imported')
+#     # except Exception as e:
+#     #     print(e)
+#     return picture_fn
 
 def save_picture(form_pictures):
     pictures_uids = []
@@ -106,6 +108,7 @@ def save_picture(form_pictures):
     
     ## create temp directory for session
     session_path = os.path.join(app.root_path, 'static/temps/', session_uid)
+    print(session_path)
     os.mkdir(session_path)
     
     ## save all dicom in temp directory
@@ -120,18 +123,24 @@ def save_picture(form_pictures):
         picture_path = os.path.join(session_path, picture_uid)
         # print(picture_path)
         form_picture.save(picture_path)
+        print(f"saved at {picture_path}")
     
     ## extract series uid
-    series_uid = extract_series_uid(session_path)
-    if series_uid == 0:
-        raise ValueError("Not a series!!")
+    try:
+        series_uid, profile_picture_uid = extract_series_uid(session_path)
+    except ValueError as e:
+        raise ImportError("Not a series or incorrect dicom format!!")
+    print(series_uid)
+    print(profile_picture_uid)
+    # if series_uid == 0:
+    #     raise ValueError("Not a series!!")
     
     ## extract profile image
-    profile_picture_uid = pictures_uids[int(len(pictures_uids) / 2)]
+    # profile_picture_uid = pictures_uids[int(len(pictures_uids) / 2)]
     
     # convert and save profile picturre
-    convert_dcm_jpg(os.path.join(session_path, profile_picture_uid))
-    
+    convert_dcm_jpg(os.path.join(session_path, pictures_uids[int(len(pictures_uids) / 2) - 1]), profile_picture_uid)
+    print("Converted and saved")
     ## import all dicom files
     try:
         for dicom in os.listdir(session_path):
@@ -139,10 +148,13 @@ def save_picture(form_pictures):
             print(f"imported {dicom}")
         
         ## delete everything after import complete
-        os.rmdir(session_path)
+        # os.rmdir(session_path)
+        shutil.rmtree(session_path, ignore_errors=True)
     except Exception as e:
         print(e)
-    return series_uid, profile_picture_uid.replace('.dcm', '.jpg')
+    # print(series_uid)
+    # print(profile_picture_uid)
+    return series_uid, profile_picture_uid + '.jpg'
     # return picture_fn
     
 def encrypt_id(form):
@@ -161,18 +173,36 @@ def encrypt_id(form):
     return f"{p1}.{p2}.{p3}"
 
 def extract_series_uid(dicom_path):
+    print("start extracting series uid")
     series_uid = ''
     counter = 0
     
     dicoms = [os.path.join(dicom_path, d) for d in os.listdir(dicom_path)]
+    
+    middle_instance_path = dicoms[int(len(dicoms)/2)]
+    profile_instance_uid = extract_instance_uid(middle_instance_path)
+    
     for d_path in dicoms:
         dicom = pydicom.dcmread(d_path, force=True)
-        if hasattr(dicom, "SliceLocation") and dicom.SliceLocation:
-            if series_uid != str(dicom.SeriesInstanceUID):
+        if series_uid != str(dicom.SeriesInstanceUID):
                 series_uid = str(dicom.SeriesInstanceUID)
                 counter = counter + 1
-    if counter > 1:
-        return 0
+        # if hasattr(dicom, "SliceLocation") and dicom.SliceLocation:
+        #     if series_uid != str(dicom.SeriesInstanceUID):
+        #         series_uid = str(dicom.SeriesInstanceUID)
+        #         counter = counter + 1
+    if counter == 1:
+        return series_uid, profile_instance_uid
     else:
-        return series_uid
+        raise ValueError("Not a series or incorrect dicom format!!")
         
+def extract_instance_uid(dicom_path):
+    dicom = pydicom.dcmread(dicom_path, force=True)
+    # print(dicom)
+    instance_uid = str(dicom.SOPInstanceUID)
+    return instance_uid
+    # if hasattr(dicom, "SliceLocation") and dicom.SliceLocation:
+    #     instance_uid = str(dicom.SOPInstanceUID)
+    #     return instance_uid
+    # else:
+    #     print("Incorrect dicom format !!")

@@ -1,15 +1,12 @@
-from __future__ import print_function
-from crypt import methods
-from flask import render_template, url_for, flash, redirect, request, abort
+from flask import render_template, url_for, flash, redirect, abort
 from RIS import app, db, bcrypt, db
 from RIS.forms import NewTechnician, UpdateTechnician
 from RIS.models import Technician, User, Scan
-from flask_login import login_user, current_user, logout_user, login_required
+from flask_login import current_user, login_required
 import hashlib
 import csv
-import uuid
 
-from RIS.utils import save_picture, save_profile_picture, calculate_age, send_reset_email, send_credentials
+from RIS.utils.utils import send_credentials
 
 @app.route("/admin")
 @login_required
@@ -276,8 +273,8 @@ def tech_disable(id):
                 tech.active = False
                 tech_user.active = False
                 
-                db.session.add(tech)
-                db.session.add(tech_user)
+                # db.session.add(tech)
+                # db.session.add(tech_user)
                 db.session.commit()
                 
                 flash('Technician disabled', 'success')
